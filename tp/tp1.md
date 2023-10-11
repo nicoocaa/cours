@@ -1,7 +1,7 @@
 # TP1
 
-Pour avoir mon adresse IP de l'interface WiFi et de l'interface Ethernet je dois rentrer la commande :
+Pour avoir l'adresse IP de mon interface WiFi et de mon interface Ethernet je dois rentrer la commande :
 
-```shell
+```
 ipconfig
 ```
