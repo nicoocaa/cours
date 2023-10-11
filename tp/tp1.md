@@ -1,8 +1,7 @@
 # TP1
 
 Je n'ai pas de port Ethernet je n'ai donc pas d'IP d'interface Ethernet 
-Cependant je peux avoir l'adresse IP et l'adresse MAC de mon interface WiFi 
-Pour cela il faut que je rentre la comande suivante dans mon terminal: 
+Si je veux mon IP et d'autre info je peux taper la commande suivante: 
 
 ```shell
 ipconfig /all
@@ -32,4 +31,31 @@ Carte réseau sans fil Wi-Fi :
    ``` 
 
 L'adresse IP de mon interface WiFi est donc `10.33.48.15`   
-L'adresse MAC de mon interface Wifi: `C8-5E-A9-3E-3E-FB`  
+L'adresse MAC de mon interface Wifi est donc `C8-5E-A9-3E-3E-FB`  
+L'adresse IP de la passerelle `10.33.51.254` 
+
+
+pour avoir l'adresse MAC de la passerelle j'utilise cette comande:
+
+```shell
+arp /a
+```
+j'obtient alors :
+
+```shell
+Interface : 10.33.48.15 --- 0x8
+  Adresse Internet      Adresse physique      Type
+  10.33.48.20           c4-03-a8-2a-95-4a     dynamique
+  10.33.48.21           34-c9-3d-22-bb-b8     dynamique
+  10.33.48.22           48-e7-da-a7-c7-5f     dynamique
+  10.33.48.113          50-5a-65-4f-b8-61     dynamique
+  10.33.48.121          48-e7-da-58-7c-03     dynamique
+  10.33.51.254          7c-5a-1c-cb-fd-a4     dynamique
+  10.33.51.255          ff-ff-ff-ff-ff-ff     statique
+  224.0.0.22            01-00-5e-00-00-16     statique
+  224.0.0.251           01-00-5e-00-00-fb     statique
+  224.0.0.252           01-00-5e-00-00-fc     statique
+  239.255.255.250       01-00-5e-7f-ff-fa     statique
+  255.255.255.255       ff-ff-ff-ff-ff-ff     statique
+``` 
+L'adresse MAC de ma passerelle est donc : `7c-5a-1c-cb-fd-a4`
