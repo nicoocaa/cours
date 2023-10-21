@@ -59,3 +59,20 @@ Interface : 10.33.48.15 --- 0x8
   255.255.255.255       ff-ff-ff-ff-ff-ff     statique
 ``` 
 L'adresse MAC de ma passerelle est donc : `7c-5a-1c-cb-fd-a4`
+
+III
+
+en faisant `ipconfig /all` je peux voir l'adresse ip du serveur dhcp 
+l'adresse ip du serveur dhcp est donc `10.33.51.254`
+toujours grace a la méme commande je peux voir la date d'expiration du bail dhcp
+
+```shell
+ Bail expirant. . . . . . . . . . . . . : mardi 17 octobre 2023 11:35:45
+```
+
+la commande `ipconfig /all` me permet de voir les adresse ip des serveurs dns connu 
+il y a donc :
+```shell
+Serveurs DNS. . .  . . . . . . . . . . : 10.33.10.2
+                                       8.8.8.8
+```
