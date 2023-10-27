@@ -49,7 +49,7 @@ ipconfig /renew
 ```
 - utiliser Wireshark pour capturer les 4 trames DHCP 
 
-[resultat wireshark](./dhcpRenew.pcapng) 
+[resultat wireshark](./tp4_dhcp_client.pcapng) 
 
 🌞 **Analyser la capture Wireshark**
 
