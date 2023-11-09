@@ -53,74 +53,12 @@ ipconfig /renew
 
 🌞 **Analyser la capture Wireshark**
 
-- parmi ces 4 trames, laquelle contient les informations proposées au client ?
-- en cliquant sur l'une des 4 trames, et en dépliant la partie DHCP (en bas dans l'interface de Wireshark) vous pourrez repérer ces informations
+- parmi ces 4 trames, laquelle contient les informations proposées au client ? 
 
-🦈 **`tp4_dhcp_client.pcapng`**
+la deuxiéme : dhcp ofter
+
 
 ## II. Serveur DHCP
-
-![U get an ip](./img/ugetanip.jpg)
-
-Pour cette partie, on sort les VMs ! On va monter un petit LAN au sein duquel un serveur DHCP pourra fournir des adresses IP aux clients, ainsi que d'autres informations en plus d'une IP.
-
-Respectez scrupuleusement la checklist suivante sur chaque VM, avant de vous attaquer à la suite :
-
-- [ ] IP statique (sauf mention contraire)
-- [ ] Connexion SSH fonctionnelle
-- [ ] Vous avez défini un nom à la machine (voir [mémo](../../cours/memo/rocky_network.md))
-- [ ] Pas de carte NAT (sauf mention contraire)
-- [ ] Accès internet
-  - [ ] ajout d'une route par défaut si nécessaire
-  - [ ] ajout de l'adresse d'un serveur DNS si nécessaire
-
-### 1. Topologie
-
-```schema
-                node2.tp4.b1
-                  ┌──────┐
-                  │      │
-                  │      │
-                  │      │
-                  └──┬───┘
-                     │
-                     │
-  ┌──────┐           │           ┌──────┐
-  │      │       ┌───┴────┐      │      │NAT
-  │      ├───────┤ switch ├──────┤      ├────
-  │      │       └───┬────┘      │      │
-  └──────┘           │           └──────┘
-node1.tp4.b1         │         router.tp4.b1
-                     │
-                     │
-                  ┌──┴───┐
-                  │      │
-                  │      │
-                  │      │
-                  └──────┘
-                 dhcp.tp4.b1
-```
-
-> *Pour rappel, dans nos TPs avec VirtualBox, les switches sont les réseaux host-only (réseau privé hôte). **Assurez-vous de bien avoir désactiver le DHCP fourni par VirtualBox***.
-
-### 2. Tableau d'adressage
-
-| Machine         | LAN1            |
-| --------------- | --------------- |
-| `router.tp4.b1` | `10.4.1.254/24` |
-| `dhcp.tp4.b1`   | `10.4.1.253/24` |
-| `node1.tp4.b1`  | N/A             |
-| `node2.tp4.b1`  | `10.4.1.12/24`  |
-
-> *Pas d'adresse IP pour `node1.tp4.b1`, on le laisse de côté pour le moment.*
-
-### 3. Setup topologie
-
-➜ **Mettez en place la topologie**
-
-- 3 VMs, un réseau host-only, des IPs statiques, on commence à répéter la même musique !
-- il faut ajouter une carte NAT à `router.tp4.b1` pour lui donner un accès internet
-- ajout de route par défaut sur `dhcp.tp4.b1` et`node2.tp4.b1` : `router.tp4.b1` doit être leur passerelle pour accéder à Internet
 
 🌞 **Preuve de mise en place**
 
