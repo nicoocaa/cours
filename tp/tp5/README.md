@@ -200,12 +200,3 @@ success
 LISTEN 0      511          0.0.0.0:80        0.0.0.0:*    users:(("nginx",pid=14216,fd=6),("nginx",pid=14215,fd=6))
 LISTEN 0      511             [::]:80           [::]:*    users:(("nginx",pid=14216,fd=7),("nginx",pid=14215,fd=7))
 ```
-🌞 **Analyse trafic**
-
-- pendant que vous effectuez une connexion d'un client vers le serveur web qui tourne sur `web.tp4.b1`, lancez une capture réseau
-- repérez :
-  - le 3 way handshake TCP
-  - du trafic HTTP
-  - le contenu de la page HTML retourné (oui c'est visible direct dans Wireshark)
-
-🦈 **`tp5_web.pcapng`** avec le 3-way handshake, la page HTML retournée, et une fin de connexion propre si vous en avez une :)
