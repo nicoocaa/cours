@@ -100,3 +100,132 @@ nico  papier_alu
 [marmotte@localhost home]$ cd nico/
 -bash: cd: nico/: Permission denied
 ```
+
+
+# Partie 2 : Programmes et paquets
+
+# I. Programmes et processus
+
+## 1. Run then kill
+
+🌞 **Lancer un processus `sleep`**
+
+```bash 
+[marmotte@localhost home]$ sleep 1000
+```
+
+```bash
+[marmotte@localhost ~]$ ps aux | grep sleep
+marmotte    1558  0.0  0.1   5584  1016 pts/0    S+   10:48   0:00 sleep 1000
+marmotte    1560  0.0  0.2   6408  2296 pts/1    S+   10:48   0:00 grep --color=auto sleep
+```
+
+🌞 **Terminez le processus `sleep` depuis le deuxième terminal**
+
+```bash
+[marmotte@localhost ~]$ kill 1558
+```
+
+```bash
+[marmotte@localhost home]$ sleep 1000
+Terminated
+```
+
+## 2. Tâche de fond
+
+🌞 **Lancer un nouveau processus `sleep`, mais en tâche de fond**
+
+```bash
+[marmotte@localhost home]$ sleep 1000&
+[1] 1571
+```
+
+🌞 **Visualisez la commande en tâche de fond**
+
+```bash
+[marmotte@localhost home]$ jobs
+[1]+  Running                 sleep 1000 &
+```
+
+## 3. Find paths
+
+
+🌞 **Trouver le chemin où est stocké le programme `sleep`**
+
+```bash
+[marmotte@localhost bin]$ ls -al /usr/bin/ | grep sleep
+-rwxr-xr-x.  1 root root   36312 Apr 24  2023 sleep
+```
+
+🌞 Tant qu'on est à chercher des chemins : **trouver les chemins vers tous les fichiers qui s'appellent `.bashrc`**
+
+```bash
+[nico@localhost ~]$ sudo find / -name .bashrc
+[sudo] password for nico:
+/etc/skel/.bashrc
+/root/.bashrc
+/home/nico/.bashrc
+/home/papier_alu/marmotte/.bashrc
+```
+
+## 4. La variable PATH
+
+
+🌞 **Vérifier que**
+
+```bash
+[nico@localhost ~]$ which sleep
+/usr/bin/sleep
+[nico@localhost ~]$ which ssh
+/usr/bin/ssh
+[nico@localhost ~]$ which ping
+/usr/bin/ping
+```
+
+# II. Paquets
+
+🌞 **Installer le paquet `firefox`**
+
+```bash
+sudo dnf install git
+[sudo] password for nico:
+Last metadata expiration check: 0:15:32 ago on Tue 23 Jan 2024 11:24:50 AM CET.
+Dependencies resolved.
+============================================================================
+ Package                  Arch     Version                Repository   Size
+============================================================================
+Installing:
+ git                      x86_64   2.39.3-1.el9_2         appstream    61 k
+ [...]
+   perl-podlators-1:4.14-460.el9.noarch
+  perl-subs-1.03-480.el9.noarch
+  perl-vars-1.05-480.el9.noarch
+
+Complete!
+```
+
+🌞 **Utiliser une commande pour lancer Firefox**
+
+```bash
+[nico@localhost bin]$ which git
+/usr/bin/git
+```
+
+🌞 **Installer le paquet `nginx`**
+
+- il faut utiliser le gestionnaire de paquet natif à l'OS que tu as choisi
+- si c'est un système...
+  - basé sur Debian, comme Debian lui-même, ou Ubuntu, ou Kali, ou d'autres, c'est `apt` qui est fourni
+  - basé sur RedHat, comme Rocky, Fedora, ou autres, c'est `dnf` qui est fourni
+
+🌞 **Déterminer**
+
+- le chemin vers le dossier de logs de NGINX
+- le chemin vers le dossier qui contient la configuration de NGINX
+
+🌞 **Mais aussi déterminer...**
+
+- l'adresse `http` ou `https` des serveurs où vous téléchargez des paquets
+- une commande `apt install` ou `dnf install` permet juste de faire un téléchargement HTTP
+- ma question c'est donc : sur quel URL tu t'es connecté pour télécharger ce paquet
+- il existe un dossier qui contient la liste des URLs consultées quand vous demandez un téléchargement de paquets
