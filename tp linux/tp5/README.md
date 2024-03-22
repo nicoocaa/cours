@@ -1,4 +1,4 @@
-# resultat output:
+# script IDcard
 
 ```bash
 [nico@vm1 ~]$ ./teste.sh
@@ -22,3 +22,23 @@ Here is your random cat (jpg file) : https://cdn2.thecatapi.com/images/cnp.jpg
 ```
 
 [teste.sh](teste.sh)
+
+# II. Script youtube-dl
+
+
+```bash
+[nico@vm1 yt]$ ./yt.sh https://www.youtube.com/watch?v=1avzYu_paZA
+./yt.sh: line 47: /var/log/yt/download.log: Permission denied
+Téléchargement réussi: Vincent Milou's 'You Changed' Video Part _ SOLO
+Lien de la vidéo: https://www.youtube.com/watch?v=1avzYu_paZA
+Le fichier est stocké dans: /srv/yt/downloads/Vincent Milou's 'You Changed' Video Part _ SOLO/Vincent Milou's 'You Changed' Video Part _ SOLO.mp4
+[nico@vm1 yt]$
+
+``` 
+
+```bash
+[nico@vm1 downloads]$ ls
+'LOST TRIOLOGY'  'NOAH _ The Art of Surfing (Directors Cut)'  'spin the block (2023)'  "Vincent Milou's 'You Changed' Video Part _ SOLO"
+``` 
+
+[yt.sh](yt.sh)  

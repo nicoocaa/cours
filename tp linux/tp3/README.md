@@ -192,18 +192,451 @@ public (active)
 ```bash
 [nico@node1 ssh]$ sudo systemctl restart firewalld
 ```
+🌞 Effectuer une connexion SSH sur le nouveau port
 
-🌞 **Effectuer une connexion SSH sur le nouveau port**
+```
+PS C:\Users\nico> ssh -p 25847 nico@10.2.1.11
+nico@10.2.1.11's password:
+Last login: Mon Jan 29 12:00:41 2024
+[nico@node1 ~]$
+```
 
-- depuis votre PC
-- il faudra utiliser une option à la commande `ssh` pour vous connecter à la VM
+II. Service HTTP
 
-> Je vous conseille de remettre le port par défaut une fois que cette partie est terminée.
+🌞 Installer le serveur NGINX
 
-✨ **Bonus : affiner la conf du serveur SSH**
+```
+[nico@node1 ~]$ sudo dnf install nginx
+Rocky Linux 9 - BaseOS                                                404  B/s | 4.1 kB     00:10
+Rocky Linux 9 - BaseOS                                                142 kB/s | 2.2 MB     00:15
+Rocky Linux 9 - AppStream                                             447  B/s | 4.5 kB     00:10
+Rocky Linux 9 - AppStream                                             475 kB/s | 7.4 MB     00:15
+Rocky Linux 9 - Extras                                                290  B/s | 2.9 kB     00:10
+Package nginx-1:1.20.1-14.el9_2.1.x86_64 is already installed.
+Dependencies resolved.
+Nothing to do.
+Complete!
+```
 
-- faites vos plus belles recherches internet pour améliorer la conf de SSH
-- par "améliorer" on entend essentiellement ici : augmenter son niveau de sécurité
-- le but c'est pas de me rendre 10000 lignes de conf que vous pompez sur internet pour le bonus, mais de vous éveiller à divers aspects de SSH, la sécu ou d'autres choses liées
+🌞 Démarrer le service NGINX
 
-![Such a hacker](./img/such_a_hacker.png)
+```
+[nico@node1 ~]$ sudo systemctl start nginx
+[sudo] password for nico:
+[nico@node1 ~]$ systemctl status nginx
+● nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; vendor preset: disabled)
+     Active: active (running) since Tue 2024-01-30 09:07:19 CET; 13s ago
+    Process: 905 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+    Process: 906 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
+    Process: 907 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+   Main PID: 908 (nginx)
+      Tasks: 2 (limit: 5896)
+     Memory: 3.3M
+        CPU: 17ms
+     CGroup: /system.slice/nginx.service
+             ├─908 "nginx: master process /usr/sbin/nginx"
+             └─909 "nginx: worker process"
+
+Jan 30 09:07:19 node1.tp3.b1 systemd[1]: Starting The nginx HTTP and reverse proxy server...
+```
+
+🌞 Déterminer sur quel port tourne NGINX
+
+```
+[nico@node1 ~]$ sudo dnf update
+[nico@node1 ~]$ sudo dnf install net-tools
+[nico@node1 ~]$ netstat --version
+```
+```SHELL
+[nico@node1 ~]$ sudo netstat -plnt | grep nginx
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      908/nginx: master p
+tcp6       0      0 :::80                   :::*                    LISTEN      908/nginx: master p
+```
+```
+[nico@node1 ~]$ sudo firewall-cmd --add-port=80/tcp --permanent
+success
+[nico@node1 ~]$ sudo firewall-cmd --reload
+success
+```
+
+🌞 Déterminer les processus liés au service NGINX
+
+```
+[nico@node1 ~]$ ps aux | grep nginx
+root         908  0.0  0.0  10084   300 ?        Ss   09:07   0:00 nginx: master process /usr/sbin/nginx
+nginx        909  0.0  0.2  13852  2396 ?        S    09:07   0:00 nginx: worker process
+nico    42794  0.0  0.2   6408  2176 pts/0    S+   09:35   0:00 grep --color=auto nginx
+```
+
+🌞 Déterminer le nom de l'utilisateur qui lance NGINX
+
+```
+[nico@node1 ~]$ ps aux | grep nginx
+🌞root         908  0.0  0.0  10084   300 ?        Ss   09:07   0:00 nginx: master process /usr/sbin/nginx🌞
+nginx        909  0.0  0.2  13852  2396 ?        S    09:07   0:00 nginx: worker process
+nico    42794  0.0  0.2   6408  2176 pts/0    S+   09:35   0:00 grep --color=auto nginx
+```
+```
+[nico@node1 ~]$ cat /etc/passwd | grep nginx
+nginx:x:991:991:Nginx web server:/var/lib/nginx:/sbin/nologin
+```
+
+🌞 Test !
+
+```
+[nico@node1 ~]$ sudo curl http://10.2.1.11:80 | head -n 7
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0<!doctype html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>HTTP Server Test Page powered by: Rocky Linux</title>
+    <style type="text/css">
+100  7620  100  7620    0     0   744k      0 --:--:-- --:--:-- --:--:--  826k
+curl: (23) Failed writing body
+```
+
+
+2. Analyser la conf de NGINX
+🌞 Déterminer le path du fichier de configuration de NGINX
+
+```
+[nico@node1 ~]$ ls -al /etc/nginx/nginx.conf
+-rw-r--r--. 1 root root 2334 Oct 16 20:00 /etc/nginx/nginx.conf
+```
+
+
+🌞 Trouver dans le fichier de conf
+
+```SHELL
+[nico@node1 ~]$ cat /etc/nginx/nginx.conf | grep server -A 10
+    server {
+        listen       80;
+        listen       [::]:80;
+        server_name  _;
+        root         /usr/share/nginx/html;
+
+        # Load configuration files for the default server block.
+        include /etc/nginx/default.d/*.conf;
+
+        error_page 404 /404.html;
+        location = /404.html {
+        }
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+        }
+    }
+--
+# Settings for a TLS enabled server.
+#
+#    server {
+#        listen       443 ssl http2;
+#        listen       [::]:443 ssl http2;
+#        server_name  _;
+#        root         /usr/share/nginx/html;
+#
+#        ssl_certificate "/etc/pki/nginx/server.crt";
+#        ssl_certificate_key "/etc/pki/nginx/private/server.key";
+#        ssl_session_cache shared:SSL:1m;
+#        ssl_session_timeout  10m;
+#        ssl_ciphers PROFILE=SYSTEM;
+#        ssl_prefer_server_ciphers on;
+#
+#        # Load configuration files for the default server block.
+#        include /etc/nginx/default.d/*.conf;
+#
+#        error_page 404 /404.html;
+#            location = /40x.html {
+#        }
+#
+#        error_page 500 502 503 504 /50x.html;
+#            location = /50x.html {
+#        }
+#    }
+```
+
+```
+[nico@node1 ~]$ cat /etc/nginx/nginx.conf | grep include
+include /usr/share/nginx/modules/*.conf;
+    include             /etc/nginx/mime.types;
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    include /etc/nginx/conf.d/*.conf;
+        include /etc/nginx/default.d/*.conf;
+#        include /etc/nginx/default.d/*.conf;
+```
+
+
+3. Déployer un nouveau site web
+🌞 Créer un site web
+
+```
+[nico@node1 ~]$ sudo mkdir -p /var/www/tp3_linux
+```
+```
+[nico@node1 ~]$ cd /var/www/tp3_linux
+```
+```
+[nico@node1 tp3_linux]$ sudo nano index.html
+```
+```
+[nico@node1 tp3_linux]$ sudo cat index.html
+<h1>MEOW mon premier serveur web</h1>
+```
+
+🌞 Gérer les permissions
+
+```
+[nico@node1 ~]$ sudo chown -R nginx:nginx /var/www/tp3_linux
+[sudo] password for nico:
+```
+
+🌞 Adapter la conf NGINX
+```
+[nico@node1 ~]$ sudo systemctl restart nginx
+[nico@node1 ~]$ sudo nano /etc/nginx/nginx.conf
+
+[nico@node1 nginx]$ ls
+[nico@node1 nginx]$ cd conf.d
+[nico@node1 conf.d]$ ls
+[nico@node1 conf.d]$ sudo nano tp3.conf
+[nico@node1 conf.d]$ echo $RANDOM
+21850
+[nico@node1 conf.d]$ sudo nano tp3.conf
+[nico@node1 conf.d]$ sudo systemctl restart nginx
+[nico@node1 conf.d]$ sudo firewall-cmd --add-port=21850/tcp --permanent
+success
+[nico@node1 conf.d]$ sudo firewall-cmd --reload
+success
+```
+
+🌞 Visitez votre super site web
+
+```
+[nico@node1 conf.d]$ curl http://10.2.1.11:21850
+<h1>MEOW mon premier serveur web</h1>
+```
+
+
+III. Your own services
+
+
+
+🌞 Afficher le fichier de service SSH
+
+```
+[nico@node1 ~]$ systemctl status sshd
+● sshd.service - OpenSSH server daemon
+     Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2024-01-30 09:24:06 CET; 1h 45min ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+   Main PID: 18011 (sshd)
+      Tasks: 1 (limit: 5896)
+     Memory: 3.1M
+        CPU: 47ms
+     CGroup: /system.slice/sshd.service
+             └─18011 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+
+Jan 30 09:24:06 node1.tp3.b1 systemd[1]: Starting OpenSSH server daemon...
+Jan 30 09:24:06 node1.tp3.b1 sshd[18011]: Server listening on 0.0.0.0 port 25847.
+Jan 30 09:24:06 node1.tp3.b1 sshd[18011]: Server listening on :: port 25847.
+```
+```
+[nico@node1 ~]$ cat /usr/lib/systemd/system/sshd.service | grep 'ExecStart='
+ExecStart=/usr/sbin/sshd -D $OPTIONS
+```
+```
+[nico@node1 ~]$ sudo systemctl start sshd
+```
+
+
+🌞 Afficher le fichier de service NGINX
+
+```
+[nico@node1 ~]$ systemctl status nginx
+● nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; preset: disabled)
+     Active: active (running) since Tue 2024-01-30 10:56:27 CET; 17min ago
+    Process: 42996 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+    Process: 42997 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
+    Process: 42998 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+   Main PID: 42999 (nginx)
+      Tasks: 2 (limit: 5896)
+     Memory: 1.9M
+        CPU: 16ms
+     CGroup: /system.slice/nginx.service
+             ├─42999 "nginx: master process /usr/sbin/nginx"
+             └─43000 "nginx: worker process"
+
+Jan 30 10:56:27 node1.tp3.b1 systemd[1]: nginx.service: Deactivated successfully.
+Jan 30 10:56:27 node1.tp3.b1 systemd[1]: Stopped The nginx HTTP and reverse proxy server.
+Jan 30 10:56:27 node1.tp3.b1 systemd[1]: Starting The nginx HTTP and reverse proxy server...
+Jan 30 10:56:27 node1.tp3.b1 nginx[42997]: nginx: the configuration file /etc/nginx/nginx.conf syntax>
+Jan 30 10:56:27 node1.tp3.b1 nginx[42997]: nginx: configuration file /etc/nginx/nginx.conf test is su>
+Jan 30 10:56:27 node1.tp3.b1 systemd[1]: Started The nginx HTTP and reverse proxy server.
+```
+```
+[nico@node1 ~]$ cat /usr/lib/systemd/system/nginx.service | grep 'ExecStart='
+ExecStart=/usr/sbin/nginx
+```
+
+🌞 Créez le fichier /etc/systemd/system/tp3_nc.service
+
+```
+[nico@node1 ~]$ echo $RANDOM
+13584
+[nico@node1 ~]$ sudo nano /etc/systemd/system/tp3_nc.service
+[nico@node1 ~]$ sudo firewall-cmd --add-port=13584/tcp --permanent
+success
+[nico@node1 ~]$ sudo firewall-cmd --reload
+success
+```
+
+🌞 Indiquer au système qu'on a modifié les fichiers de service
+
+```
+[nico@node1 ~]$ sudo systemctl daemon-reload
+```
+
+🌞 Démarrer notre service de ouf
+
+```
+[nico@node1 ~]$ sudo systemctl start tp3_nc.service
+```
+
+🌞 Vérifier que ça fonctionne
+
+```
+[nico@node1 ~]$ sudo systemctl status tp3_nc.service
+● tp3_nc.service - Super netcat tout fou
+     Loaded: loaded (/etc/systemd/system/tp3_nc.service; static)
+     Active: active (running) since Tue 2024-01-30 11:23:19 CET; 50s ago
+   Main PID: 43109 (nc)
+      Tasks: 1 (limit: 5896)
+     Memory: 1.1M
+        CPU: 4ms
+     CGroup: /system.slice/tp3_nc.service
+             └─43109 /usr/bin/nc -l 13584 -k
+
+Jan 30 11:23:19 node1.tp3.b1 systemd[1]: Started Super netcat tout fou.
+```
+```
+[nico@node1 ~]$ ss -tln | grep 13584
+LISTEN 0      10           0.0.0.0:13584      0.0.0.0:*
+LISTEN 0      10              [::]:13584         [::]:*
+```
+
+```
+[nico@node1 ~]$ sudo journalctl -xe -u tp3_nc.service -f
+Jan 30 11:23:19 node1.tp3.b1 systemd[1]: Started Super netcat tout fou.
+░░ Subject: A start job for unit tp3_nc.service has finished successfully
+░░ Defined-By: systemd
+░░ Support: https://wiki.rockylinux.org/rocky/support
+░░
+░░ A start job for unit tp3_nc.service has finished successfully.
+░░
+░░ The job identifier is 3615.
+Jan 30 11:29:00 node1.tp3.b1 nc[43109]: SSH-2.0-OpenSSH_9.5
+Jan 30 11:29:07 node1.tp3.b1 nc[43109]: SSH-2.0-OpenSSH_9.5
+Jan 30 11:59:04 node1.tp3.b1 nc[43109]: gfd
+Jan 30 12:11:39 node1.tp3.b1 nc[43109]: dfs
+Jan 30 12:11:40 node1.tp3.b1 nc[43109]: fdsq
+Jan 30 12:11:40 node1.tp3.b1 nc[43109]: dfsq
+Jan 30 12:13:20 node1.tp3.b1 nc[43109]: bonjour
+Jan 30 12:13:23 node1.tp3.b1 nc[43109]: ça va
+Jan 30 12:13:26 node1.tp3.b1 nc[43109]: no
+```
+
+
+🌞 Les logs de votre service
+
+```
+[nico@node1 ~]$ sudo journalctl -xe -u tp3_nc | grep start
+░░ Subject: A start job for unit tp3_nc.service has finished successfully
+░░ A start job for unit tp3_nc.service has finished successfully.
+```
+```
+[nico@node1 ~]$ sudo journalctl -xe -u tp3_nc | grep nc
+░░ Subject: A start job for unit tp3_nc.service has finished successfully
+░░ A start job for unit tp3_nc.service has finished successfully.
+Jan 30 11:29:00 node1.tp3.b1 nc[43109]: SSH-2.0-OpenSSH_9.5
+Jan 30 11:29:07 node1.tp3.b1 nc[43109]: SSH-2.0-OpenSSH_9.5
+Jan 30 11:59:04 node1.tp3.b1 nc[43109]: gfd
+Jan 30 12:11:40 node1.tp3.b1 nc[43109]: dfsq
+Jan 30 12:13:20 node1.tp3.b1 nc[43109]: bonjour
+Jan 30 12:13:23 node1.tp3.b1 nc[43109]: ça va
+Jan 30 12:13:26 node1.tp3.b1 nc[43109]: no
+```
+```
+[nico@node1 ~]$  sudo journalctl -xe -u tp3_nc | grep finished
+░░ Subject: A start job for unit tp3_nc.service has finished successfully
+░░ A start job for unit tp3_nc.service has finished successfully. 
+```
+
+🌞 S'amuser à kill le processus
+
+```
+[nico@node1 ~]$ ps -fe | grep nc
+dbus         657       1  0 08:58 ?        00:00:00 /usr/bin/dbus-broker-launch --scope system --audit
+root         693       1  0 08:58 ?        00:00:00 login -- nico
+nico      839       1  0 09:04 ?        00:00:00 /usr/lib/systemd/systemd --user
+nico      841     839  0 09:04 ?        00:00:00 (sd-pam)
+nico      849     693  0 09:04 tty1     00:00:00 -bash
+🌞root       43109       1  0 11:23 ?        00:00:00 /usr/bin/nc -l 13584 -k🌞
+root       43166   18011  0 12:01 ?        00:00:00 sshd: nico [priv]
+nico    43170   43166  0 12:01 ?        00:00:00 sshd: nico@pts/0
+nico    43171   43170  0 12:01 pts/0    00:00:00 -bash
+nico    43230   43171  0 12:20 pts/0    00:00:00 ps -fe
+nico    43231   43171  0 12:20 pts/0    00:00:00 grep --color=auto nc
+```
+```
+[nico@node1 ~]$ sudo kill 43109
+```
+
+🌞 Affiner la définition du service
+
+```
+[nico@node1 ~]$ sudo cat /etc/systemd/system/tp3_nc.service
+[Unit]
+Description=Super netcat tout fou
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/nc -l 13584 -k
+```
+```
+[nico@node1 ~]$ sudo systemctl start tp3_nc.service
+[nico@node1 ~]$  ps -fe | grep nc
+dbus         657       1  0 08:58 ?        00:00:00 /usr/bin/dbus-broker-launch --scope system --audit
+root         693       1  0 08:58 ?        00:00:00 login -- nico
+nico      839       1  0 09:04 ?        00:00:00 /usr/lib/systemd/systemd --user
+nico      841     839  0 09:04 ?        00:00:00 (sd-pam)
+nico      849     693  0 09:04 tty1     00:00:00 -bash
+root       43166   18011  0 12:01 ?        00:00:00 sshd: nico [priv]
+nico    43170   43166  0 12:01 ?        00:00:00 sshd: nico@pts/0
+nico    43171   43170  0 12:01 pts/0    00:00:00 -bash
+root       43259       1  0 12:28 ?        00:00:00 /usr/bin/nc -l 13584 -k
+nico    43260   43171  0 12:29 pts/0    00:00:00 ps -fe
+nico    43261   43171  0 12:29 pts/0    00:00:00 grep --color=auto nc
+```
+```
+[nico@node1 ~]$ sudo kill 43259
+```
+```
+[nico@node1 ~]$  ps -fe | grep nc
+dbus         657       1  0 08:58 ?        00:00:00 /usr/bin/dbus-broker-launch --scope system --audit
+root         693       1  0 08:58 ?        00:00:00 login -- nico
+nico      839       1  0 09:04 ?        00:00:00 /usr/lib/systemd/systemd --user
+nico      841     839  0 09:04 ?        00:00:00 (sd-pam)
+nico      849     693  0 09:04 tty1     00:00:00 -bash
+root       43166   18011  0 12:01 ?        00:00:00 sshd: nico [priv]
+nico    43170   43166  0 12:01 ?        00:00:00 sshd: nico@pts/0
+nico    43171   43170  0 12:01 pts/0    00:00:00 -bash
+root       43265       1  0 12:29 ?        00:00:00 /usr/bin/nc -l 13584 -k
+nico    43266   43171  0 12:29 pts/0    00:00:00 ps -fe
+nico    43267   43171  0 12:29 pts/0    00:00:00 grep --color=auto nc
+```

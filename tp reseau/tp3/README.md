@@ -71,7 +71,7 @@ rtt min/avg/max/mdev = 0.941/1.105/1.207/0.117 ms
 
 - routeur
 ```
-[elio@localhost ~]$ ping 8.8.8.8
+[nico@localhost ~]$ ping 8.8.8.8
 PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 64 bytes from 8.8.8.8: icmp_seq=1 ttl=114 time=30.2 ms
 64 bytes from 8.8.8.8: icmp_seq=2 ttl=114 time=31.6 ms
@@ -90,9 +90,9 @@ rtt min/avg/max/mdev = 17.746/25.048/31.627/4.986 ms
 - client
 
 ```
-[elio@localhost ~]$ sudo ip route add default via 10.3.1.254 dev enp0s3
-[sudo] password for elio:
-[elio@localhost ~]$ ping 8.8.8.8
+[nico@localhost ~]$ sudo ip route add default via 10.3.1.254 dev enp0s3
+[sudo] password for nico:
+[nico@localhost ~]$ ping 8.8.8.8
 PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 64 bytes from 8.8.8.8: icmp_seq=1 ttl=55 time=23.0 ms
 64 bytes from 8.8.8.8: icmp_seq=2 ttl=55 time=21.5 ms
