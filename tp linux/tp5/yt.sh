@@ -1,6 +1,6 @@
 #!/bin/bash
-# Auteur: Vincent.B
-# Date: 05/03/2024
+# nico.p
+# Date: 15/03/2024
 
 
 URL="$1"
